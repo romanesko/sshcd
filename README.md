@@ -1,5 +1,7 @@
 # sshcd
 
+### This is a fork of fraction/sshcd with support for remote command execution
+
 Tired of having to type this janky command to [ssh](http://manpages.ubuntu.com/manpages/saucy/en/man1/ssh.1.html) and [cd](http://manpages.ubuntu.com/manpages/saucy/en/man1/cd.1posix.html) into unfamiliar remote servers?
 
 ```sh
@@ -12,19 +14,26 @@ Stop it. Connect with SSH and cd (change directory) with one command.
 sshcd user@fraction.io:/foo/bar
 ```
 
+## Requirements
+
+- Bash shell (the script requires bash, not sh or zsh)
+- curl (for installation via provided commands)
+
 ## Installation
 
-Use Homebrew to download and install the executable.
+Add the executable into your PATH and give it execute permissions.
+
+Mac example:
 
 ```sh
-brew tap fraction/homebrew-formulae
-brew install sshcd
+sudo curl -Lo ~/.local/bin/sshcd https://raw.githubusercontent.com/romanesko/sshcd/refs/heads/master/sshcd
+sudo chmod +x ~/.local/bin/sshcd
 ```
 
-Add the executable into your path and give it permissions.
+Linux example:
 
 ```sh
-sudo curl -Lo /usr/local/bin/sshcd http://git.io/wfAXEQ
+sudo curl -Lo /usr/local/bin/sshcd https://raw.githubusercontent.com/romanesko/sshcd/refs/heads/master/sshcd
 sudo chmod +x /usr/local/bin/sshcd
 ```
 
@@ -36,15 +45,30 @@ The default usage is pretty simple.
 sshcd user@fraction.io:/foo/bar
 ```
 
-The tool supports prepended flags, too!
+Execute a remote command:
+
+```sh
+sshcd user@fraction.io:/foo/bar ls -la
+```
+
+The tool supports prepended ssh flags as well:
 
 ```sh
 sshcd -v user@fraction.io:/foo/bar
 ```
+
+### Spaces and special characters
+
+Paths and remote commands with spaces or special characters are supported and properly escaped.
+
+### Error handling
+
+If you do not provide a target in the form [user@]host:/path, the script will print usage instructions and exit with an error.
+
 ## Support
 
-Please [open an issue](https://github.com/fraction/sshcd/issues/new) for questions and concerns.
+Please [open an issue](https://github.com/romanesko/sshcd/issues/new) for questions and concerns.
 
 ## Contributing
 
-Fork the project, commit your changes, and [open a pull request](https://github.com/fraction/sshcd/compare/).
+Fork the project, commit your changes, and [open a pull request](https://github.com/romanesko/sshcd/compare/).

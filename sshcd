@@ -1,34 +1,44 @@
 #!/bin/bash -e
-options=("${@:1:$(($# - 1))}")                  # Everything in "$@" except the last argument
-target="${!#}"                                  # The last argument from "$@"
 
-# Get user
+options=()
+target=""
+remote_cmd=()
+user=""
+path=""
+
+for arg in "$@"; do
+    if [[ -z "$target" && "$arg" == *:* ]]; then
+        target="$arg"
+    elif [[ -z "$target" ]]; then
+        options+=("$arg")
+    else
+        remote_cmd+=("$arg")
+    fi
+done
+
+if [[ -z "$target" ]]; then
+    echo "Usage: $0 [ssh options] [user@]host:/path [command]" >&2
+    exit 1
+fi
+
 usertest="${target%%:*}"
-if [ ! "${usertest/@/}" = "${usertest}" ]; then # user is included in the target
-    user="${target%%@*}"                        # Get user
-    target="${target#*@}"                       # Strip out user
+path="${target#*:}"
+
+if [[ "$usertest" == *"@"* ]]; then
+    user="${usertest%%@*}"
+    host="${usertest#*@}"
+else
+    host="$usertest"
 fi
 
-# Get hostname and path
-if [ "${target::1}" = "[" ]; then               # Syntax:  [user@]\[hostname\]:path
-    remote="${target%\]*}]"
-    path="${target#*\]}"
-    if [ -z "${path}" ]; then
-	exec ssh "$@"
-    fi
-    path="${path:1}"
-else                                            # Syntax:  [user@]hostname:path
-    remote="${target%%:*}"
-    path="${target#*:}"
-    if [ "${path}" = "${target}" ]; then
-	exec ssh "$@"
-    fi
+[[ -n "$user" ]] && remote="${user}@${host}" || remote="${host}"
+
+path_escaped=$(printf "%q" "$path")
+
+if [[ ${#remote_cmd[@]} -gt 0 ]]; then
+    cmd=$(printf "%q " "${remote_cmd[@]}")
+    exec ssh "${options[@]}" "${remote}" "cd $path_escaped && exec $cmd"
+else
+    exec ssh -t "${options[@]}" "${remote}" "cd $path_escaped; exec \$SHELL -l"
 fi
 
-# Construct target argument for ssh
-if [ ! "${usertest/@/}" = "${usertest}" ]; then # user is included in the target
-    remote="${user}@${remote}"                  # Reattach user
-fi
-
-path="${path/\'/\'\\\'\'}"
-exec ssh -t "${options[@]}" "${remote}" "cd '${path}'; exec \$SHELL -l"
