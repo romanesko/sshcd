@@ -51,6 +51,12 @@ Execute a remote command:
 sshcd user@fraction.io:/foo/bar ls -la
 ```
 
+Execute a complex command (multiple commands):
+
+```sh
+sshcd user@fraction.io:/foo/bar bash -c 'sudo df -h ~'
+```
+
 The tool supports prepended ssh flags as well:
 
 ```sh
